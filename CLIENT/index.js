@@ -1,24 +1,44 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import "./index.css";
-import App from "./App";
-import { BrowserRouter } from "react-router-dom";
-import axios from "axios";
-import { Provider } from "react-redux";
-import { store } from "./store";
+import { configureStore, createSlice } from "@reduxjs/toolkit";
 
-// creating a root element for rendering
-const root = ReactDOM.createRoot(document.getElementById("root"));
+// create a slice for user authentication
+const userSlice = createSlice({
+  name: "user",
+  initialState: { isLoggedIn: false }, // Initial state for user authentication
+  reducers: {
+    login(state) {
+      state.isLoggedIn = true;
+    },
+    logout(state) {
+      localStorage.removeItem("userId"); // Remove user ID from local storage
+      state.isLoggedIn = false;
+    },
+  },
+});
 
-axios.defaults.baseURL = "http://localhost:5500"; // set default base url
+// Create a slice for admin authentication
+const adminSlice = createSlice({
+  name: "auth",
+  initialState: { isLoggedIn: false },
+  reducers: {
+    login(state) {
+      state.isLoggedIn = true;
+    },
+    logout(state) {
+      localStorage.removeItem("adminId"); // Remove admin ID from local storage
+      localStorage.removeItem("token"); // Remove admin token from local storage
+      state.isLoggedIn = false;
+    },
+  },
+});
 
-// render the app within the root element
-root.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </BrowserRouter>
-  </React.StrictMode>
-);
+// Export actions for user and admin slices
+export const userActions = userSlice.actions;
+export const adminActions = adminSlice.actions;
+
+// Configure the Redux store with the combined reducers
+export const store = configureStore({
+  reducer: {
+    user: userSlice.reducer,
+    admin: adminSlice.reducer,
+  },
+});
